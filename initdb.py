@@ -7,7 +7,8 @@ CREATE TABLE Servers (
 id BIGINT,
 admin VARCHAR,
 games VARCHAR,
-events VARCHAR)"""
+events VARCHAR,
+announcement_channel VARCHAR)"""
 db.execute(command)
 
 db.commit()

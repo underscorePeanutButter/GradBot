@@ -1,14 +1,17 @@
 import discord
 import sqlite3
 import datetime
+import asyncio
+from threading import Thread
 import secret
 
 class Server:
-    def __init__(self, id, admin, games, events):
+    def __init__(self, id, admin, games, events, announcement_channel):
         self.id = id
         self.admin = admin
         self.games = games
         self.events = events
+        self.announcement_channel = announcement_channel
 
 class Game:
     def __init__(self, name, roles):
@@ -16,12 +19,19 @@ class Game:
         self.roles = roles
 
 class Event:
-    def __init__(self, game, date):
+    def __init__(self, game, date, reminders):
         self.game = game
         self.date = date
+        self.reminders = reminders
 
 client = discord.Client()
 client.intents.guilds = True
+
+def init():
+    loop = asyncio.get_event_loop()
+    loop.create_task(client.start(secret.TOKEN))
+    loop.create_task(handle_reminders())
+    Thread(target=loop.run_forever())
 
 def parse_date(date):
     try:
@@ -53,6 +63,51 @@ async def send(message, channel=None, user=None):
     if user:
         await user.send(message)
 
+async def handle_reminders():
+    db = sqlite3.connect("gradbot.db")
+    await asyncio.sleep(10)
+
+    while True:
+        servers = db.execute("SELECT * FROM Servers").fetchall()
+        for server in servers:
+            guild = discord.utils.find(lambda g: g.id == server[0], client.guilds)
+            announcement_channel = discord.utils.find(lambda c: c.name == server[4], guild.channels)
+            games = {}
+
+            if announcement_channel:
+                for game in eval(server[2]):
+                    roles = [discord.utils.find(lambda r: r.id == role, guild.roles) for role in game["roles"]]
+                    games[game["name"]] = Game(game["name"], roles)
+
+                updated_events = []
+
+                for event in eval(server[3]):
+                    now = datetime.datetime.now()
+                    date = parse_date(event["date"])
+                    
+                    ref_event = Event(games[event["game"]], date, event["reminders"])
+
+                    if now.day >= date.day and not ref_event.reminders["long"]:
+                        message = f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} today at {date.hour}:{date.minute}."
+                        await send(message, channel=announcement_channel)
+
+                        ref_event.reminders["long"] = 1
+                        updated_events.append(ref_event)
+                    if now.day >= date.day and now.hour >= date.hour and not now.minute >= date.minute and not ref+event.reminders["short"]:
+                        message = f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} starting soon!"
+                        await send(message, channel=announcement_channel)
+
+                        ref_event.reminders["short"] = 1
+                        updated_events.append(ref_event)
+                    if now.day >= date.day and now.hour >= date.hour and now.minute >= date.minute:
+                        message = f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} starts now!"
+                        await send(message, channel=announcement_channel)
+
+                db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"long": event.reminders["long"], "short": event.reminders["short"]}} for event in updated_events]), server[0]))
+                db.commit()
+
+        await asyncio.sleep(5)
+
 @client.event
 async def on_ready():
     print(f"Logged in as {client.user.name}")
@@ -79,7 +134,7 @@ async def on_message(message):
                 role_mentions = message.role_mentions
             
             if not server:
-                db.execute("INSERT INTO Servers VALUES (?, ?, '[]', '[]')", (message.guild.id, str([message.author.id])))
+                db.execute("INSERT INTO Servers VALUES (?, ?, '[]', '[]', '')", (message.guild.id, str([message.author.id])))
                 db.commit()
                 server = db.execute("SELECT * FROM Servers WHERE id=?", (message.guild.id,)).fetchone()
 
@@ -88,8 +143,9 @@ async def on_message(message):
                 roles = [discord.utils.find(lambda r: r.id == role, message.channel.guild.roles) for role in game["roles"]]
                 games[game["name"]] = Game(game["name"], roles)
 
-            events = [Event(games[event["game"]], parse_date(event["date"])) for event in eval(server[3])]
-            server = Server(server[0], eval(server[1]), games, events)
+            events = [Event(games[event["game"]], parse_date(event["date"]), event["reminders"]) for event in eval(server[3])]
+            announcement_channel = discord.utils.find(lambda c: c.name == server[4], message.guild.channels)
+            server = Server(server[0], eval(server[1]), games, events, announcement_channel)
 
             if command[0] == "game":
                 if command[1] == "create":
@@ -128,7 +184,7 @@ async def on_message(message):
 
                         del server.games[game_name]
 
-                        db.execute("UPDATE Servers SET games=?, events=? WHERE id=?", (str([{"name": game.name, "roles": [role.id for role in game.roles]} for key, game in server.games.items()]), str([{"game": event.game.name, "date": format_date(event.date)} for event in server.events]), str(server.id)))
+                        db.execute("UPDATE Servers SET games=?, events=? WHERE id=?", (str([{"name": game.name, "roles": [role.id for role in game.roles]} for key, game in server.games.items()]), str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"long": event.reminders["long"], "short": event.reminders["short"]}} for event in server.events]), str(server.id)))
                         db.commit()
                         db.close()
 
@@ -151,9 +207,9 @@ async def on_message(message):
                             await send("That game does not exist. Please check your spelling and try again.", channel=message.channel)
                             return
                         
-                        server.events.append(Event(server.games[game_name], date))
+                        server.events.append(Event(server.games[game_name], date, {"long": 0, "short": 0}))
                         
-                        db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date)} for event in server.events]), str(server.id)))
+                        db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"long": 0, "short": 0}} for event in server.events]), str(server.id)))
                         db.commit()
                         db.close()
 
@@ -175,17 +231,31 @@ async def on_message(message):
                         for event in server.events:
                             if event.game.name == game_name:
                                 events_to_remove.append(event)
-                                
+
                         for event in events_to_remove:
                             server.events.remove(event)
                         
-                        db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date)} for event in server.events]), str(server.id)))
+                        db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"long": event.reminders["long"], "short": event.reminders["short"]}} for event in server.events]), str(server.id)))
                         db.commit()
                         db.close()
 
                         await send("Events unscheduled.", channel=message.channel)
                     else:
                         await send("Please ensure the game name is in quotations.", channel=message.channel)
+
+                    return
+                
+            if command[0] == "set":
+                if command[1] == "channel":
+                    channel_id = command[2].replace("<","").replace(">","").replace("#","")
+                    channel = discord.utils.find(lambda c: c.id == int(channel_id), message.guild.channels)
+                    server.announcement_channel = channel
+
+                    db.execute("UPDATE Servers SET announcement_channel=? WHERE id=?", (server.announcement_channel.name, server.id))
+                    db.commit()
+                    db.close()
+
+                    await send("Announcement channel set.", channel=message.channel)
 
                     return
 
@@ -206,8 +276,17 @@ async def on_message(message):
 
                     return
 
+                if command[1] == "channel":
+                    if not server.announcement_channel:
+                        await send("This server doesn't have an announcement channel set.", message.channel)
+                    else:
+                        await send(server.announcement_channel.mention, message.channel)
+
+                    return
+                    
+
             db.close()
             await send("Invalid command syntax. Use `!help` if you need it.", channel=message.channel)
             return
 
-client.run(secret.TOKEN)
+init()
