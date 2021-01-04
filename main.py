@@ -70,17 +70,11 @@ async def on_message(message):
                 mentions = message.mentions
                 role_mentions = message.role_mentions
             
-            if command[0] == "init":
+            if not server:
                 db.execute("INSERT INTO Servers VALUES (?, ?, '[]', '[]')", (message.guild.id, str([message.author.id])))
                 db.commit()
+                server = db.execute("SELECT * FROM Servers WHERE id=?", (message.guild.id,)).fetchone()
                 db.close()
-
-                await send("Server initialized. You may now make full use of this bot's functions.", channel=message.channel)
-                return
-
-            if not server:
-                await send("This server has not been initialized. You can do so with `!init`.", channel=message.channel)
-                return
 
             games = {}
             for game in eval(server[2]):
@@ -103,7 +97,7 @@ async def on_message(message):
                         db.commit()
                         db.close()
 
-                        await send("Game created.")
+                        await send("Game created.", channel=message.channel)
                     else:
                         await send("Please ensure the game name is in quotations.", channel=message.channel)
 
