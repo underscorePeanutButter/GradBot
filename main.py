@@ -60,16 +60,66 @@ async def on_message(message):
             db = sqlite3.connect("gradbot.db")
 
             server = db.execute("SELECT * FROM Servers WHERE id=?", (message.guild.id,)).fetchone()
+            message.content = message.content.strip("!").split("\"")
+            
+            if type(message.content) == str:
+                command = message.content
+            else:
+                command = message.content[0].split(" ")
+                string_args = message.content[1:]
+                mentions = message.mentions
+                role_mentions = message.role_mentions
+            
+            if command[0] == "init":
+                db.execute("INSERT INTO Servers VALUES (?, ?, '[]', '[]')", (message.guild.id, str([message.author.id])))
+                db.commit()
+                db.close()
+
+                await send("Server initialized. You may now make full use of this bot's functions.", channel=message.channel)
+                return
+
             if not server:
                 await send("This server has not been initialized. You can do so with `!init`.", channel=message.channel)
                 return
 
-            message.content = message.content.replace("\"", "").strip("!").split(" ")
-            if message.content[0] == "game":
-                if message.content[1] == "create":
-                    game = " ".join(message.content[2:])
-                    db.execute("INSERT INTO Servers VALUES ()")
+            games = {}
+            for game in eval(server[2]):
+                roles = [discord.utils.find(lambda r: r.id == role, message.channel.guild.roles) for role in game["roles"]]
+                games[game["name"]] = Game(game["name"], roles)
 
-        return
+            events = [Event(games[event["game"]], parse_date(event["date"])) for event in eval(server[3])]
+            server = Server(server[0], eval(server[1]), games, events)
+
+            if command[0] == "game":
+                if command[1] == "create":
+                    if len(string_args) > 0:
+                        game_name = string_args[0]
+                        if len(role_mentions) == 0:
+                            role_mentions = [discord.utils.find(lambda r: r.name == "@everyone", message.channel.guild.roles)]
+
+                        server.games[game_name] = Game(game_name, role_mentions)
+
+                        db.execute("UPDATE Servers SET games=? WHERE id=?", (str([{"name": game.name, "roles": [role.id for role in game.roles]} for key, game in server.games.items()]), str(server.id)))
+                        db.commit()
+                        db.close()
+
+                        await send("Game created.")
+                    else:
+                        await send("Please ensure the game name is in quotations.", channel=message.channel)
+
+                    return
+
+            if command[0] == "list":
+                if command[1] == "games":
+                    if len(games) > 0:
+                        await send(", ".join([game.name for key, game in server.games.items()]), channel=message.channel)
+                    else:
+                        await send("This server has no games.", channel=message.channel)
+                    
+                    return
+
+            db.close()
+            await send("Invalid command syntax. Use `!help` if you need it.", channel=message.channel)
+            return
 
 client.run(secret.TOKEN)
