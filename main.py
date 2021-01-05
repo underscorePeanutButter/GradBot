@@ -110,6 +110,7 @@ async def handle_reminders():
 
 @client.event
 async def on_ready():
+    await client.change_presence(status=discord.Status.idle, activity=discord.CustomActivity("doing normal grad stuff"))
     print(f"Logged in as {client.user.name}")
 
 @client.event
