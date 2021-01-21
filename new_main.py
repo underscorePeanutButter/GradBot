@@ -76,7 +76,7 @@ async def handle_reminders():
             games = {}
             if type(current_server.announcement_channel) is not str:
                 for game in current_server.games:
-                    roles = [discord.utils.find(lambda r: r.id == role, guild.roles) for role in game["roles"]]
+                    roles = [discord.utils.find(lambda r: r.id == role, current_server_guild.roles) for role in game["roles"]]
                     games[game["name"]] = Game(game["name"], roles)
                 updated_events = []
                 for event in server.events:
