@@ -72,7 +72,7 @@ async def handle_reminders():
         for server in servers:
             current_server = Server(server[0], eval(server[1]), eval(server[2]), eval(server[3]), server[4])
             current_server_guild = discord.utils.find(lambda g: g.id == current_server.id, client.guilds)
-            current_server.announcement_channel = discord.utils.find(lambda c: c.name == current_server.announcement_channel, guild.channels)
+            current_server.announcement_channel = discord.utils.find(lambda c: c.name == current_server.announcement_channel, current_server_guild.channels)
             games = {}
             if type(current_server.announcement_channel) is not str:
                 for game in current_server.games:
