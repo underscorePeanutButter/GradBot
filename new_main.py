@@ -96,7 +96,7 @@ async def handle_reminders():
                     if now.day >= date.day and now.hour >= date.hour and now.minute >= date.minute:
                         await send(f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} starts now!", channel=current_server.announcement_channel)
                         updated_events.pop()
-                db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"long": event.reminders["long"], "short": event.reminders["short"]}} for event in updated_events]), server.id))
+                db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"long": event.reminders["long"], "short": event.reminders["short"]}} for event in updated_events]), current_server.id))
                 db.commit()
         await asyncio.sleep(20)
 
