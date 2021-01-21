@@ -95,19 +95,19 @@ async def handle_reminders():
                     str_minute = str(date.minute)
                     if len(str_minute) == 1:
                         str_minute = "0" + str_minute
-                    if now.day >= date.day and not ref_event.reminders["long"] and not (now.hour >= date.hour and now.minute >= date.minute):
+                    if now.year >= date.year and now.month >= date.month and now.day >= date.day and not ref_event.reminders["long"] and not (now.hour >= date.hour and now.minute >= date.minute):
                         updated_events[-1].reminders["long"] = 1
                         if not len(ref_event.game.roles):
                             message += "@everyone"
                         message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} today at {str_hour}:{str_minute}."
                         await send(message, channel=current_server.announcement_channel)
-                    elif now.day >= date.day and now.hour >= date.hour and not ref_event.reminders["short"] and not now.minute >= date.minute:
+                    elif now.year >= date.year and now.month >= date.month and now.day >= date.day and now.hour >= date.hour and not ref_event.reminders["short"] and not now.minute >= date.minute:
                         updated_events[-1].reminders["short"] = 1
                         if not len(ref_event.game.roles):
                             message += "@everyone"
                         message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} starting soon!"
                         await send(message, channel=current_server.announcement_channel)
-                    elif now.day >= date.day and now.hour >= date.hour and now.minute >= date.minute:
+                    elif now.year >= date.year and now.month >= date.month and now.day >= date.day and now.hour >= date.hour and now.minute >= date.minute:
                         if not len(ref_event.game.roles):
                             message += "@everyone"
                         message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} starts now!"
