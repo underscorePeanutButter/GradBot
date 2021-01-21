@@ -91,7 +91,7 @@ async def handle_reminders():
                     if now.day >= date.day and not ref_event.reminders["long"]:
                         updated_events[-1].reminders["long"] = 1
                         await send(f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} today at {date.hour}:{date.minute}.", channel=current_server.announcement_channel)
-                    if now.day >= date.day and now.hour >= date.hour and not ref_events.reminders["short"]:
+                    if now.day >= date.day and now.hour >= date.hour and not ref_event.reminders["short"]:
                         updated_events[-1].reminders["short"] = 1
                         await send(f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} starting soon!", channel=current_server.announcement_channel)
                     if now.day >= date.day and now.hour >= date.hour and now.minute >= date.minute:
