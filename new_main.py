@@ -101,7 +101,7 @@ async def handle_reminders():
                             message += "@everyone"
                         message += f"{' '.join([role.mention for role in ref_event.game.roles])}\nThere will be {ref_event.game.name} on {date.month}/{date.day}/{date.year} at {str_hour}:{str_minute}."
                         await send(message, channel=current_server.announcement_channel)
-                    if now.year >= date.year and now.month >= date.month and now.day >= date.day and not ref_event.reminders["long"] and not (now.hour >= date.hour and now.minute >= date.minute):
+                    elif now.year >= date.year and now.month >= date.month and now.day >= date.day and not ref_event.reminders["long"] and not (now.hour >= date.hour and now.minute >= date.minute):
                         updated_events[-1].reminders["long"] = 1
                         if not len(ref_event.game.roles):
                             message += "@everyone"
