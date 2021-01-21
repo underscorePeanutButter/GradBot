@@ -89,11 +89,17 @@ async def handle_reminders():
                     updated_events.append(Event(games[event["game"]], date, event["reminders"]))
                     ref_event = updated_events[-1]
                     message = ""
+                    str_hour = str(date.hour)
+                    if len(str_hour) == 1:
+                        str_hour = "0" + str_hour
+                    str_minute = str(date.minute)
+                    if len(str_minute) == 1:
+                        str_minute = "0" + str_minute
                     if now.day >= date.day and not ref_event.reminders["long"]:
                         updated_events[-1].reminders["long"] = 1
                         if not len(ref_event.game.roles):
                             message += "@everyone"
-                        message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} today at {date.hour}:{date.minute}."
+                        message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} today at {str_hour}:{str_minute}."
                         await send(message, channel=current_server.announcement_channel)
                     elif now.day >= date.day and now.hour >= date.hour and not ref_event.reminders["short"]:
                         updated_events[-1].reminders["short"] = 1
