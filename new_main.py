@@ -79,7 +79,7 @@ async def handle_reminders():
                     roles = [discord.utils.find(lambda r: r.id == role, current_server_guild.roles) for role in game["roles"]]
                     games[game["name"]] = Game(game["name"], roles)
                 updated_events = []
-                for event in server.events:
+                for event in current_server.events:
                     now = datetime.datetime.now()
                     if now.hour < 8:
                         now = datetime.datetime(now.year, now.month, now.day - 1, now.hour + 16, now.minute)
