@@ -158,7 +158,7 @@ async def on_message(message):
             server = Server(server[0], eval(server[1]), games, events, announcement_channel)
 
             if command[0] == "help":
-                await send("Available commands:\n`!list games` list this server's games\n`!list schedule` list all upcoming events\n`!game create \"<gamename>\"` create a new game with the specified name\n`!game delete \"<gamename>\"` delete the game with the specified name\n`!game schedule \"<gamename>\" <date (mm/dd/yyyy)> <time (hh:mm in 24h)>` schedule a new event\n`!game unschedule \"<gamename>\"` cancel all events related to the specified game\n`!set channel <channel>` change the channel in which the bot should send event reminders", channel=message.channel)
+                await send("Available commands:\n`!list games` list this server's games\n`!list schedule` list all upcoming events\n`!game create \"<game name>\" <role mentions>` create a new game with the specified name (reminders will include the specified role mentions)\n`!game delete \"<game name>\"` delete the game with the specified name\n`!game schedule \"<game name>\" <date (mm/dd/yyyy)> <time (hh:mm in 24h)>` schedule a new event\n`!game unschedule \"<game name>\"` cancel all events related to the specified game\n`!set channel <channel mention>` change the channel in which the bot should send event reminders", channel=message.channel)
                 return
 
             elif command[0] == "game":
