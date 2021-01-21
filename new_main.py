@@ -87,6 +87,7 @@ async def handle_reminders():
                         now = datetime.datetime(now.year, now.month, now.day, now.hour - 8, now.minute)
                     date = parse_date(event["date"])
                     updated_events.append(Event(games[event["game"]], date, event["reminders"]))
+                    ref_event = updated_events[-1]
                     if now.day >= date.day and not ref_event.reminders["long"]:
                         updated_events[-1].reminders["long"] = 1
                         await send(f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} today at {date.hour}:{date.minute}.", channel=current_server.announcement_channel)
