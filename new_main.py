@@ -70,51 +70,39 @@ async def handle_reminders():
     while True:
         servers = db.execute("SELECT * FROM Servers").fetchall()
         for server in servers:
-            guild = discord.utils.find(lambda g: g.id == server[0], client.guilds)
-            announcement_channel = discord.utils.find(lambda c: c.name == server[4], guild.channels)
+            current_server = Server(server[0], eval(server[1]), eval(server[2]), eval(server[3]), server[4])
+            current_server_guild = discord.utils.find(lambda g: g.id == current_server.id, client.guilds)
+            current_server.announcement_channel = discord.utils.find(lambda c: c.name == current_server.announcement_channel, guild.channels)
             games = {}
-
-            if announcement_channel:
-                for game in eval(server[2]):
+            if type(current_server.announcement_channel) is not str:
+                for game in current_server.games:
                     roles = [discord.utils.find(lambda r: r.id == role, guild.roles) for role in game["roles"]]
                     games[game["name"]] = Game(game["name"], roles)
-
                 updated_events = []
-
-                for event in eval(server[3]):
+                for event in server.events:
                     now = datetime.datetime.now()
                     if now.hour < 8:
                         now = datetime.datetime(now.year, now.month, now.day - 1, now.hour + 16, now.minute)
                     else:
                         now = datetime.datetime(now.year, now.month, now.day, now.hour - 8, now.minute)
                     date = parse_date(event["date"])
-
-                    ref_event = Event(games[event["game"]], date, event["reminders"])
-
+                    updated_events.append(Event(games[event["game"]], date, event["reminders"]))
                     if now.day >= date.day and not ref_event.reminders["long"]:
-                        message = f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} today at {date.hour}:{date.minute}."
-                        await send(message, channel=announcement_channel)
-                        ref_event.reminders["long"] = 1
-                        updated_events.append(ref_event)
-
-                    if now.day >= date.day and now.hour >= date.hour and not now.minute >= date.minute and not ref_event.reminders["short"]:
-                        message = f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} starting soon!"
-                        await send(message, channel=announcement_channel)
-                        ref_event.reminders["short"] = 1
-                        updated_events.append(ref_event)
-
+                        updated_events[-1].reminders["long"] = 1
+                        await send(f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} today at {date.hour}:{date.minute}.", channel=current_server.announcement_channel)
+                    if now.day >= date.day and now.hour >= date.hour and not ref_events.reminders["short"]:
+                        updated_events[-1].reminders["short"] = 1
+                        await send(f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} starting soon!", channel=current_server.announcement_channel)
                     if now.day >= date.day and now.hour >= date.hour and now.minute >= date.minute:
-                        message = f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} starts now!"
-                        await send(message, channel=announcement_channel)
-
+                        await send(f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} starts now!", channel=current_server.announcement_channel)
+                        updated_events.pop()
                 db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"long": event.reminders["long"], "short": event.reminders["short"]}} for event in updated_events]), server.id))
                 db.commit()
-
         await asyncio.sleep(20)
 
 @client.event
 async def on_ready():
-    await client.change_presence(status=discord.Status.idle, activity=discord.Game("uhhh something"))
+    await client.change_presence(status=discord.Status.online)
     print(f"Logged in as {client.user.name}")
 
 @client.event
