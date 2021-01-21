@@ -88,14 +88,24 @@ async def handle_reminders():
                     date = parse_date(event["date"])
                     updated_events.append(Event(games[event["game"]], date, event["reminders"]))
                     ref_event = updated_events[-1]
+                    message = ""
                     if now.day >= date.day and not ref_event.reminders["long"]:
                         updated_events[-1].reminders["long"] = 1
-                        await send(f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} today at {date.hour}:{date.minute}.", channel=current_server.announcement_channel)
+                        if not len(ref_event.game.roles):
+                            message += "@everyone"
+                        message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} today at {date.hour}:{date.minute}."
+                        await send(message, channel=current_server.announcement_channel)
                     if now.day >= date.day and now.hour >= date.hour and not ref_event.reminders["short"]:
                         updated_events[-1].reminders["short"] = 1
-                        await send(f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} starting soon!", channel=current_server.announcement_channel)
+                        if not len(ref_event.game.roles):
+                            message += "@everyone"
+                        message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} starting soon!"
+                        await send(message, channel=current_server.announcement_channel)
                     if now.day >= date.day and now.hour >= date.hour and now.minute >= date.minute:
-                        await send(f"{' '.join([role.mention for role in ref_event.game.roles])}\n\n{ref_event.game.name} starts now!", channel=current_server.announcement_channel)
+                        if not len(ref_event.game.roles):
+                            message += "@everyone"
+                        message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} starts now!"
+                        await send(message, channel=current_server.announcement_channel)
                         updated_events.pop()
                 db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"long": event.reminders["long"], "short": event.reminders["short"]}} for event in updated_events]), current_server.id))
                 db.commit()
@@ -149,8 +159,8 @@ async def on_message(message):
                 if command[1] == "create":
                     if len(string_args) > 0:
                         game_name = string_args[0]
-                        if len(role_mentions) == 0:
-                            role_mentions = [discord.utils.find(lambda r: r.name == "@everyone", message.channel.guild.roles)]
+                        # if len(role_mentions) == 0:
+                        #     role_mentions = [discord.utils.find(lambda r: r.name == "@everyone", message.channel.guild.roles)]
 
                         if game_name in server.games:
                             await send("That game already exists.", channel=message.channel)
