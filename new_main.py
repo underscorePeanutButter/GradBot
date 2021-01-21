@@ -115,7 +115,7 @@ async def handle_reminders():
                         updated_events.pop()
                 db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"long": event.reminders["long"], "short": event.reminders["short"]}} for event in updated_events]), current_server.id))
                 db.commit()
-        await asyncio.sleep(20)
+        await asyncio.sleep(5)
 
 @client.event
 async def on_ready():
