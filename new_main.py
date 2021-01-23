@@ -292,7 +292,19 @@ async def on_message(message):
 
                 if command[1] == "schedule":
                     if len(server.events) > 0:
-                        await send(", ".join([f"{event.game.name} at {event.date.hour}:{event.date.minute} on {event.date.month}/{event.date.day}/{event.date.year}" for event in server.events]), channel=message.channel)
+                        messages = []
+                        for event in server.events:
+                            date = event.date
+                            str_hour = str(date.hour)
+                            if len(str_hour) == 1:
+                                str_hour = "0" + str_hour
+                            str_minute = str(date.minute)
+                            if len(str_minute) == 1:
+                                str_minute = "0" + str_minute
+
+                            messages.append(f"{event.game.name} at {str_hour}:{str_minute} on {date.month}/{date.day}/{date.year}")
+                        
+                        await send(", ".join(messages)), channel=message.channel)
                     else:
                         await send("There are no scheduled games.", channel=message.channel)
 
