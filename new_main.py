@@ -304,7 +304,7 @@ async def on_message(message):
 
                             messages.append(f"{event.game.name} at {str_hour}:{str_minute} on {date.month}/{date.day}/{date.year}")
                         
-                        await send(", ".join(messages)), channel=message.channel)
+                        await send(", ".join(messages), channel=message.channel)
                     else:
                         await send("There are no scheduled games.", channel=message.channel)
 
