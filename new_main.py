@@ -87,6 +87,7 @@ async def handle_reminders():
                         now = datetime.datetime(now.year, now.month, now.day, now.hour - 8, now.minute)
                     date = parse_date(event["date"])
                     now_date_difference = date - now
+                    print(now_date_difference.seconds)
                     updated_events.append(Event(games[event["game"]], date, event["reminders"]))
                     ref_event = updated_events[-1]
                     message = ""
