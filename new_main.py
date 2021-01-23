@@ -258,7 +258,7 @@ async def on_message(message):
                         for event in events_to_remove:
                             server.events.remove(event)
 
-                        db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"long": event.reminders["long"], "short": event.reminders["short"]}} for event in server.events]), str(server.id)))
+                        db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"first": event.reminders["first"], "long": event.reminders["long"], "short": event.reminders["short"]}} for event in server.events]), str(server.id)))
                         db.commit()
                         db.close()
 
