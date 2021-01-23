@@ -80,6 +80,7 @@ async def handle_reminders():
                     games[game["name"]] = Game(game["name"], roles)
                 updated_events = []
                 for event in current_server.events:
+                    print(event)
                     now = datetime.datetime.now()
                     if now.hour < 8:
                         now = datetime.datetime(now.year, now.month, now.day - 1, now.hour + 16, now.minute)
