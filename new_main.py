@@ -48,6 +48,15 @@ def parse_date(date):
             year += 2000
 
         hour = int(time[0])
+        if "am" in time[1]:
+            time[1].strip("am")
+            if hour == 12:
+                hour = 0
+        elif "pm" in time[1]:
+            time[1].strip("pm")
+            if hour != 12:
+                hour -= 12
+        
         minute = int(time[1])
 
         return datetime.datetime(year, month, day, hour, minute)
@@ -89,6 +98,14 @@ async def handle_reminders():
                     now_date_difference = date - now
                     ref_event = Event(games[event["game"]], date, event["reminders"])
                     message = ""
+                    hour_12 = date.hour
+                    str_minute_12 = str(date.minute)
+                    if hour_12 > 12:
+                        hour_12 -= 12
+                        str_minute_12 += "pm"
+                    else:
+                        str_minute_12 += "am"
+                    str_hour_12 = str(hour_12)
                     str_hour = str(date.hour)
                     if len(str_hour) == 1:
                         str_hour = "0" + str_hour
@@ -99,14 +116,14 @@ async def handle_reminders():
                         ref_event.reminders["first"] = 1
                         if not len(ref_event.game.roles):
                             message += "@everyone"
-                        message += f"{' '.join([role.mention for role in ref_event.game.roles])}\nThere will be {ref_event.game.name} on {date.month}/{date.day}/{date.year} at {str_hour}:{str_minute}."
+                        message += f"{' '.join([role.mention for role in ref_event.game.roles])}\nThere will be {ref_event.game.name} on {date.month}/{date.day}/{date.year} at {str_hour}:{str_minute} ({str_hour_12}:{str_minute_12})."
                         await send(message, channel=current_server.announcement_channel)
                         updated_events.append(ref_event)
                     elif now.year >= date.year and now.month >= date.month and now.day >= date.day and not ref_event.reminders["long"] and not (now.hour >= date.hour and now.minute >= date.minute):
                         ref_event.reminders["long"] = 1
                         if not len(ref_event.game.roles):
                             message += "@everyone"
-                        message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} today at {str_hour}:{str_minute}."
+                        message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} today at {str_hour}:{str_minute} ({str_hour_12}:{str_minute_12})."
                         await send(message, channel=current_server.announcement_channel)
                         updated_events.append(ref_event)
                     # elif now.year >= date.year and now.month >= date.month and now.day >= date.day and now.hour >= date.hour and not ref_event.reminders["short"] and not now.minute >= date.minute:
@@ -296,6 +313,14 @@ async def on_message(message):
                         messages = []
                         for event in server.events:
                             date = event.date
+                            hour_12 = date.hour
+                            str_minute_12 = str(date.minute)
+                            if hour_12 > 12:
+                                hour_12 -= 12
+                                str_minute_12 += "pm"
+                            else:
+                                str_minute_12 += "am"
+                            str_hour_12 = str(hour_12)
                             str_hour = str(date.hour)
                             if len(str_hour) == 1:
                                 str_hour = "0" + str_hour
@@ -303,7 +328,7 @@ async def on_message(message):
                             if len(str_minute) == 1:
                                 str_minute = "0" + str_minute
 
-                            messages.append(f"{event.game.name} at {str_hour}:{str_minute} on {date.month}/{date.day}/{date.year}")
+                            messages.append(f"{event.game.name} at {str_hour}:{str_minute} on {date.month}/{date.day}/{date.year} ({str_hour_12}:{str_minute_12}")
                         
                         await send(", ".join(messages), channel=message.channel)
                     else:
