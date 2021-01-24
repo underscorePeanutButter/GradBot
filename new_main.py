@@ -65,6 +65,8 @@ def parse_date(date):
 
         minute = int(time[1])
 
+        print("4")
+
         return datetime.datetime(year, month, day, hour, minute)
     except:
         return
