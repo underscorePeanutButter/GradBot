@@ -49,11 +49,11 @@ def parse_date(date):
 
         hour = int(time[0])
         if "am" in time[1]:
-            time[1].replace("am", "")
+            time[1] = time[1].replace("am", "")
             if hour == 12:
                 hour = 0
         elif "pm" in time[1]:
-            time[1].replace("pm", "")
+            time[1] = time[1].replace("pm", "")
             if hour != 12:
                 hour += 12
 
