@@ -90,6 +90,7 @@ async def handle_reminders():
                         now = datetime.datetime(now.year, now.month, now.day, now.hour - 8, now.minute)
                     date = parse_date(event["date"])
                     now_date_difference = date - now
+                    print(now_date_difference.seconds)
                     ref_event = Event(games[event["game"]], date, event["reminders"])
                     message = ""
                     hour_12 = date.hour
@@ -130,7 +131,6 @@ async def handle_reminders():
                         message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} starts in {round(now_date_difference.seconds / 60)} minutes!"
                         await send(message, channel=current_server.announcement_channel)
                         updated_events.append(ref_event)
-                    print(now_date_difference.seconds)
                     elif now_date_difference.days == 0 and now_date_difference.seconds <= 0:
                         if not len(ref_event.game.roles):
                             message += "@everyone"
