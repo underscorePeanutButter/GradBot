@@ -130,7 +130,7 @@ async def handle_reminders():
                         message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} starts in {round(now_date_difference.seconds / 60)} minutes!"
                         await send(message, channel=current_server.announcement_channel)
                         updated_events.append(ref_event)
-                    elif now.year >= date.year and now.month >= date.month and now.day >= date.day and now.minute >= date.minute:
+                    elif now.year >= date.year and now.month >= date.month and now.day >= date.day and now.hour >= date.hour and now.minute >= date.minute:
                         if not len(ref_event.game.roles):
                             message += "@everyone"
                         message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} starts now!"
@@ -245,9 +245,9 @@ async def on_message(message):
                             await send("That game does not exist. Please check your spelling and try again.", channel=message.channel)
                             return
 
-                        server.events.append(Event(server.games[game_name], date, {"long": 0, "short": 0}))
+                        server.events.append(Event(server.games[game_name], date, {"first": 0, "long": 0, "short": 0}))
 
-                        db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"first": 0, "long": 0, "short": 0}} for event in server.events]), str(server.id)))
+                        db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"first": event.reminders["first"], "long": event.reminders["long"], "short": event.reminders["short"]}} for event in server.events]), str(server.id)))
                         db.commit()
                         db.close()
 
