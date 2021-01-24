@@ -57,7 +57,7 @@ def parse_date(date):
             if hour != 12:
                 hour += 12
 
-        print(minute)
+        print(time[1])
         minute = int(time[1])
 
         return datetime.datetime(year, month, day, hour, minute)
