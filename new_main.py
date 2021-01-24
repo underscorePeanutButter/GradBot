@@ -61,7 +61,8 @@ def parse_date(date):
 
         return datetime.datetime(year, month, day, hour, minute)
     except Exception:
-        return Exception
+        print(exception)
+        return
 
 def format_date(date):
     return f"{date.month}/{date.day}/{date.year} {date.hour}:{date.minute}"
