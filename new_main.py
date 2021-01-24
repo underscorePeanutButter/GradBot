@@ -136,6 +136,9 @@ async def handle_reminders():
                             message += "@everyone"
                         message += f"{' '.join([role.mention for role in ref_event.game.roles])}\n{ref_event.game.name} starts now!"
                         await send(message, channel=current_server.announcement_channel)
+                    else:
+                        print("Nuh")
+                        updated_events.append(ref_event)
                 db.execute("UPDATE Servers SET events=? WHERE id=?", (str([{"game": event.game.name, "date": format_date(event.date), "reminders": {"first": event.reminders["first"], "long": event.reminders["long"], "short": event.reminders["short"]}} for event in updated_events]), current_server.id))
                 db.commit()
         await asyncio.sleep(5)
