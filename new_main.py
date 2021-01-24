@@ -40,13 +40,9 @@ def parse_date(date):
         time = date[1].split(":")
         date = date[0].split("/")
 
-        print("1")
-
         month = int(date[0])
         day = int(date[1])
         year = int(date[2])
-
-        print("2")
 
         if len(str(year)) == 2:
             year += 2000
@@ -60,12 +56,9 @@ def parse_date(date):
             time[1].replace("pm", "")
             if hour != 12:
                 hour += 12
-        
-        print("3")
 
+        print(minute)
         minute = int(time[1])
-
-        print("4")
 
         return datetime.datetime(year, month, day, hour, minute)
     except:
