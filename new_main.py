@@ -36,17 +36,13 @@ def init():
 def parse_date(date):
     try:
         date = date.split(" ")
-
         time = date[1].split(":")
         date = date[0].split("/")
-
         month = int(date[0])
         day = int(date[1])
         year = int(date[2])
-
         if len(str(year)) == 2:
             year += 2000
-
         hour = int(time[0])
         if "am" in time[1]:
             time[1] = time[1].replace("am", "")
@@ -56,10 +52,7 @@ def parse_date(date):
             time[1] = time[1].replace("pm", "")
             if hour != 12:
                 hour += 12
-
-        print(time[1])
         minute = int(time[1])
-
         return datetime.datetime(year, month, day, hour, minute)
     except:
         return
@@ -329,7 +322,7 @@ async def on_message(message):
                             if len(str_minute) == 1:
                                 str_minute = "0" + str_minute
 
-                            messages.append(f"{event.game.name} at {str_hour}:{str_minute} on {date.month}/{date.day}/{date.year} ({str_hour_12}:{str_minute_12}")
+                            messages.append(f"{event.game.name} at {str_hour}:{str_minute} on {date.month}/{date.day}/{date.year} ({str_hour_12}:{str_minute_12})")
                         
                         await send(", ".join(messages), channel=message.channel)
                     else:
