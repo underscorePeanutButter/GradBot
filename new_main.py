@@ -100,7 +100,7 @@ async def handle_reminders():
                     else:
                         str_minute_12 += "am"
                     str_hour_12 = str(hour_12)
-                    if len(str_minute_12) == 1:
+                    if len(str_minute_12) == 3:
                         str_minute_12 = "0" + str_minute_12
                     str_hour = str(date.hour)
                     if len(str_hour) == 1:
