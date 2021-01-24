@@ -313,6 +313,7 @@ async def on_message(message):
                             date = event.date
                             hour_12 = date.hour
                             str_minute_12 = str(date.minute)
+                            print(str_minute_12)
                             if hour_12 > 12:
                                 hour_12 -= 12
                                 str_minute_12 += "pm"
@@ -321,6 +322,7 @@ async def on_message(message):
                             str_hour_12 = str(hour_12)
                             if len(str_minute_12) == 1:
                                 str_minute_12 = "0" + str_minute_12
+                            print(str_minute_12)
                             str_hour = str(date.hour)
                             if len(str_hour) == 1:
                                 str_hour = "0" + str_hour
