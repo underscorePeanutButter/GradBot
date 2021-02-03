@@ -1,6 +1,7 @@
 import discord
 import sqlite3
 import datetime
+from calendar import monthrange
 import asyncio
 from threading import Thread
 import secret
@@ -84,10 +85,23 @@ async def handle_reminders():
                 updated_events = []
                 for event in current_server.events:
                     now = datetime.datetime.now()
+                    modified_year = now.year
+                    modified_month = now.month
+                    modified_day = now.day
+                    modified_hour = now.hour
+                    modified_minute = now.minute
                     if now.hour < 8:
-                        now = datetime.datetime(now.year, now.month, now.day - 1, now.hour + 16, now.minute)
+                        if now.day == 1:
+                            if now.month = 1:
+                                modified_year -= 1
+                                modified_month = 12
+                            else:
+                                modified_month -= 1
+                            modified_day = monthrange(modified_year, modified_month)[1]
+                        modified_hour += 16
                     else:
-                        now = datetime.datetime(now.year, now.month, now.day, now.hour - 8, now.minute)
+                        modified_hour -= 8
+                    now = datetime.datetime(modified_year, modified_month, modified_day, modified_hour, modified_minute)
                     date = parse_date(event["date"])
                     now_date_difference = date - now
                     ref_event = Event(games[event["game"]], date, event["reminders"])
@@ -329,7 +343,7 @@ async def on_message(message):
                                 str_minute = "0" + str_minute
 
                             messages.append(f"{event.game.name} at {str_hour}:{str_minute} on {date.month}/{date.day}/{date.year} ({str_hour_12}:{str_minute_12})")
-                        
+
                         await send(", ".join(messages), channel=message.channel)
                     else:
                         await send("There are no scheduled games.", channel=message.channel)
