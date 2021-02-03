@@ -92,7 +92,7 @@ async def handle_reminders():
                     modified_minute = now.minute
                     if now.hour < 8:
                         if now.day == 1:
-                            if now.month = 1:
+                            if now.month == 1:
                                 modified_year -= 1
                                 modified_month = 12
                             else:
