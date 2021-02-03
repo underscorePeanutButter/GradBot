@@ -140,7 +140,7 @@ async def handle_reminders():
                         updated_events.append(ref_event)
                     # elif now.year >= date.year and now.month >= date.month and now.day >= date.day and now.hour >= date.hour and not ref_event.reminders["short"] and not now.minute >= date.minute:
 
-                elif now.year >= date.year and now.month >= date.month and now.day >= date.day and now_date_difference.seconds <= 1800 and not ref_event.reminders["short"] and not now.minute >= date.minute:
+                    elif now.year >= date.year and now.month >= date.month and now.day >= date.day and now_date_difference.seconds <= 1800 and not ref_event.reminders["short"] and not now.minute >= date.minute:
                         ref_event.reminders["short"] = 1
                         if not len(ref_event.game.roles):
                             message += "@everyone"
