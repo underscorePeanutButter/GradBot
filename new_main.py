@@ -163,7 +163,7 @@ async def handle_reminders():
 
 @client.event
 async def on_ready():
-    await client.change_presence(status=discord.Status.online)
+    await client.change_presence(status=discord.Status.online, activity=discord.Game(name="polls coming soon"))
     print(f"Logged in as {client.user.name}")
 
 @client.event
